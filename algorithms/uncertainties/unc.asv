@@ -1,0 +1,12 @@
+function [unc] = unc(read_only_vars, public_vars)
+
+internal_counter = read_only_vars.counter;
+
+if internal_counter > 100
+    internal_counter = 1;
+end
+
+unc.lidar_history(internal_counter)
+unc.std_lidar = std()
+
+end
