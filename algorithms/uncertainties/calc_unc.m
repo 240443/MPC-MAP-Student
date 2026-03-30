@@ -1,88 +1,61 @@
 function [unc] = calc_unc(read_only_vars, plot_en)
 
-persistent lidar_history % so we can save it between calls
+persistent lidar_history
 
+% keep accumulating measurements
 if isempty(lidar_history)
-    lidar_history = []; % init
+    lidar_history = [];
+end
+lidar_history(end+1, :) = read_only_vars.lidar_distances;
+
+N = size(lidar_history, 1);
+if N < 10
+    unc = [];
+    return
 end
 
-lidar_history(read_only_vars.counter,:) = read_only_vars.lidar_distances;
-unc.lidar_history = lidar_history;
+%% LIDAR STATISTICS
+unc.lidar_std = std(lidar_history);
+unc.lidar_cov = cov(lidar_history);
 
-% modulo so that we calc every given amount of measurements
-if mod(read_only_vars.counter, 200) == 0
-    idx = read_only_vars.counter-99 : read_only_vars.counter;
-    unc.lidar_std = std(lidar_history(idx,:));
-    disp(unc.lidar_std);
+%% GNSS STATISTICS
+gnss_window   = read_only_vars.gnss_history(1:N, :);
+unc.gnss_std  = std(gnss_window);
+unc.gnss_cov  = cov(gnss_window);
 
-if plot_en == 1
-    persistent fig_lidar ax_lidar fig_gnss ax_gnss % persistant axis for 
-%overplotting graphs
+disp('Lidar std:'); disp(unc.lidar_std);
+disp('GNSS  std:'); disp(unc.gnss_std);
 
-    % --- Lidar Histogram ---
-    num_lidar    = size(lidar_history, 2);
-    lidar_data   = lidar_history(idx, :);
+% --- Plot histograms once, then stop ---
+if plot_en && N == 200
+    plot_histograms(lidar_history, gnss_window, unc);
 
+    mu = 0;
 
-    % ai generated slop that works
-    if isempty(fig_lidar) || ~isvalid(fig_lidar)
-        fig_lidar = figure('Name', 'Lidar per-channel Histogram', 'NumberTitle', 'off');
-        ax_lidar  = gobjects(1, num_lidar);
-        for ch = 1:num_lidar
-            ax_lidar(ch) = subplot(1, num_lidar, ch, 'Parent', fig_lidar);
-        end
-    end
+sigma_lidar = unc.lidar_std(1);
+sigma_gnss  = unc.gnss_std(1);
 
-    %overplot it 
-    for ch = 1:num_lidar
-        cla(ax_lidar(ch));
-        histogram(ax_lidar(ch), lidar_data(:, ch), 20);
-        xlim(ax_lidar(ch), 'auto');
-        xlabel(ax_lidar(ch), 'Distance (m)');
-        ylabel(ax_lidar(ch), 'Count');
-        title(ax_lidar(ch), sprintf('Ch %d  \\sigma=%.3f', ch, unc.lidar_std(ch)));
-        grid(ax_lidar(ch), 'on');
-    end
+% x ranges centered around 0, wide enough to show the distribution
+x_lidar = linspace(-3*sigma_lidar, 3*sigma_lidar, 500);
+x_gnss  = linspace(-3*sigma_gnss,  3*sigma_gnss,  500);
 
-    sgtitle(fig_lidar, sprintf('Lidar - All measurements  [counter = %d]', read_only_vars.counter));
-    drawnow;
+figure('Name', 'Sensor Noise PDFs');
 
-    % --- GNSS Histogram ---
-    gnss_labels = {'Latitude', 'Longitude'};
-    gnss_data   = read_only_vars.gnss_history(idx, :);  % already in read_only_vars
-    unc.gnss_std = std(gnss_data(max(1,end-99):end, :));   % std over last 100
+subplot(1, 2, 1);
+plot(x_lidar, norm_pdf(x_lidar, mu, sigma_lidar), 'b', 'LineWidth', 1.5);
+xlabel('Distance error (m)');
+ylabel('Probability density');
+title(sprintf('LiDAR Ch1  \\sigma = %.4f', sigma_lidar));
+grid on;
 
-    if isempty(fig_gnss) || ~isvalid(fig_gnss)
-        fig_gnss = figure('Name', 'GNSS Histogram', 'NumberTitle', 'off');
-        ax_gnss  = gobjects(1, 2);
-        for ch = 1:2
-            ax_gnss(ch) = subplot(1, 2, ch, 'Parent', fig_gnss);
-        end
-    end
+subplot(1, 2, 2);
+plot(x_gnss, norm_pdf(x_gnss, mu, sigma_gnss), 'r', 'LineWidth', 1.5);
+xlabel('x error [-]');
+ylabel('Probability density');
+title(sprintf('GNSS X  \\sigma = %.6f', sigma_gnss));
+grid on;
 
-    for ch = 1:2
-        cla(ax_gnss(ch));
-        histogram(ax_gnss(ch), gnss_data(:, ch), 20);
-        xlim(ax_gnss(ch), 'auto');
-        xlabel(ax_gnss(ch), gnss_labels{ch});
-        ylabel(ax_gnss(ch), 'Count');
-        title(ax_gnss(ch), sprintf('%s  \\sigma=%.6f', gnss_labels{ch}, unc.gnss_std(ch)));
-        grid(ax_gnss(ch), 'on');
-    end
-
-    sgtitle(fig_gnss, sprintf('GNSS - All measurements  [counter = %d]', read_only_vars.counter));
-    drawnow;
-end
-
-%lidar covariance -----
-lidar_window     = unc.lidar_history(idx, :);       % 100 x 8
-unc.lidar_cov    = cov(lidar_window);               % 8x8 covariance matrix
-
-%gnss covariance -----
-gnss_window      = read_only_vars.gnss_history(idx, :);  % 100 x 2
-unc.gnss_cov     = cov(gnss_window);     
-end 
-
-
+sgtitle('Sensor Noise Characteristics (Normal PDF)');
+unc.move_en = 1;
 
 end

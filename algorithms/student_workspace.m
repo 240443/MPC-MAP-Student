@@ -6,7 +6,8 @@ function [public_vars] = student_workspace(read_only_vars,public_vars)
 if (read_only_vars.counter == 1)
     public_vars = init_particle_filter(read_only_vars, public_vars);
     public_vars = init_kalman_filter(read_only_vars, public_vars);
-
+    clear functions;
+    public_vars.move_en = 0;
 end
 
 addpath algorithms/uncertainties/;
@@ -25,11 +26,10 @@ public_vars.path = plan_path(read_only_vars, public_vars);
 % 13. Plan next motion command
 public_vars = plan_motion(read_only_vars, public_vars);
 
-disp(read_only_vars.gnss_position);
-disp(read_only_vars.lidar_distances);
 plot_enable = 1;
 public_vars.uncertainties = calc_unc(read_only_vars, plot_enable);
 
+%% Plotting pdf: 
 
 
 end
