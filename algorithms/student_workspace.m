@@ -1,36 +1,74 @@
+function [public_vars] = student_workspace(read_only_vars, public_vars)
 
-function [public_vars] = student_workspace(read_only_vars,public_vars)
-%STUDENT_WORKSPACE Summary of this function goes here
+%Path selection is controlled by the PATH_SELECT variable in setup.m:
+%    1 = straight line
+%    2 = circular arc (upper semicircle)
+%    3 = sine wave
 
-% 8. Perform initialization procedure
-if (read_only_vars.counter == 1)
+
+if read_only_vars.counter == 1
+
     public_vars = init_particle_filter(read_only_vars, public_vars);
     public_vars = init_kalman_filter(read_only_vars, public_vars);
     clear functions;
+    
+
     public_vars.move_en = 0;
-end
+    %% PATH SELECTION:
+    public_vars.path_select = 3; % select from 1-3 
+
+  
+    %% PATHS: 
+    % -- Path 1: Straight line ------------------------------------------
+    %    A horizontal traverse across the arena at constant height y = 3.
+    n = 120;
+    x1 = linspace(1.5, 13.5, n)';
+    y1 = 3 * ones(n, 1);
+    path1 = [x1, y1];
+
+    % -- Path 2: Circular arc (upper semicircle) ------------------------
+    %    Centre (7.5, 1.5), radius 4 m.
+    %    Parametric sweep t ∈ [π, 0]:  starts at (3.5, 1.5) on the left,
+    %    arcs through the apex (7.5, 5.5) and ends at (11.5, 1.5) on the right.
+    n = 120;
+    t  = linspace(pi, 0, n)';
+    x2 = 7.5 + 4 * cos(t);
+    y2 = 1.5 + 4 * sin(t);
+    path2 = [x2, y2];
+
+    % -- Path 3: Sine wave ----------------------------------------------
+    %    Amplitude 2 m, half-period 5.5 m.  Stays in y ∈ [1, 5].
+    n = 150;
+    x3 = linspace(2.0, 13.0, n)';
+    y3 = 3 + 2 * sin((x3 - 2) * pi / 5.5);
+    path3 = [x3, y3];
+
+    % Store all paths so they can be re-selected without re-init
+    public_vars.path1 = path1;
+    public_vars.path2 = path2;
+    public_vars.path3 = path3;
+
+    % Activate the selected path
+    switch public_vars.path_select
+        case 2,  public_vars.path = path2;
+        case 3,  public_vars.path = path3;
+        otherwise, public_vars.path = path1;   % default = straight line
+    end
+
+end % counter == 1
 
 addpath algorithms/uncertainties/;
-% 9. Update particle filter
-public_vars.particles = update_particle_filter(read_only_vars, public_vars);
 
-% 10. Update Kalman filter
+
+public_vars.particles     = update_particle_filter(read_only_vars, public_vars);
 [public_vars.mu, public_vars.sigma] = update_kalman_filter(read_only_vars, public_vars);
+public_vars.estimated_pose = estimate_pose(public_vars);
 
-% 11. Estimate current robot position
-public_vars.estimated_pose = estimate_pose(public_vars); % (x,y,theta)
-
-% 12. Path planning
-public_vars.path = plan_path(read_only_vars, public_vars);
-
-% 13. Plan next motion command
+%% PURE PURSUIT OR HOT PURSUIT?
 public_vars = plan_motion(read_only_vars, public_vars);
 
-plot_enable = 1;
+
+plot_enable = 0;    % set to 1 to see histogram plots alongside the arena
 public_vars.uncertainties = calc_unc(read_only_vars, plot_enable);
 
-%% Plotting pdf: 
-
-
 end
-
