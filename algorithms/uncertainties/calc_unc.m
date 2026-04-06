@@ -23,8 +23,8 @@ gnss_window   = read_only_vars.gnss_history(1:N, :);
 unc.gnss_std  = std(gnss_window);
 unc.gnss_cov  = cov(gnss_window);
 
-disp('Lidar std:'); disp(unc.lidar_std);
-disp('GNSS  std:'); disp(unc.gnss_std);
+% disp('Lidar std:'); disp(unc.lidar_std);
+% disp('GNSS  std:'); disp(unc.gnss_std);
 
 % --- Plot histograms once, then stop ---
 if plot_en && N == 200

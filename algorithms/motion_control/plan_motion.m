@@ -4,7 +4,7 @@ function [public_vars] = plan_motion(read_only_vars, public_vars)
 % Tuning parameters – vary these to observe their effect (see report)
 LOOKAHEAD_DIST = 1.0;   % (m)   look-ahead distance L
                                 
-LINEAR_VEL     = 0.35;  % (m/s) constant forward speed
+LINEAR_VEL     = 0.55;  % (m/s) constant forward speed
                                                                  
 GOAL_RADIUS    = 0.25;  % (m)   stop when within this distance of path end
 % -----------------------------------------------------------------------
