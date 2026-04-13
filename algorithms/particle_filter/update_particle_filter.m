@@ -18,6 +18,5 @@ weights = weight_particles(measurements, read_only_vars.lidar_distances);
 % III. Resampling
 particles = resample_particles(particles, weights);
 
-
 end
 

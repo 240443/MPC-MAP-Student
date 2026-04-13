@@ -57,7 +57,7 @@ end % counter == 1
 addpath algorithms/uncertainties/;
 
 
-public_vars.particles     = update_particle_filter(read_only_vars, public_vars);
+public_vars.particles  = update_particle_filter(read_only_vars, public_vars);
 [public_vars.mu, public_vars.sigma] = update_kalman_filter(read_only_vars, public_vars);
 public_vars.estimated_pose = estimate_pose(public_vars);
 
