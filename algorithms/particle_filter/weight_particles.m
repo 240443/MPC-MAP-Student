@@ -1,8 +1,27 @@
 function [weights] = weight_particles(particle_measurements, lidar_distances)
-%WEIGHT_PARTICLES Summary of this function goes here
 
-N = size(particle_measurements, 1);
-weights = ones(N,1) / N;
+    N = size(particle_measurements, 1);
+    sigma = 0.5;          % tune this — sensor noise std dev in meters
+    weights = zeros(N, 1);
 
+    for i = 1:N
+        diff  = lidar_distances - particle_measurements(i, :);
+        valid = isfinite(diff);   % ignore rays that hit nothing
+
+        if sum(valid) == 0
+            weights(i) = 1e-300;
+            continue;
+        end
+
+        log_w = -0.5 * sum((diff(valid) / sigma).^2);
+        weights(i) = exp(log_w);
+    end
+
+    % Normalize
+    total = sum(weights);
+    if total == 0
+        weights = ones(N, 1) / N;   % recover from full collapse
+    else
+        weights = weights / total;
+    end
 end
-

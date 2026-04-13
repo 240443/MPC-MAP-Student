@@ -7,17 +7,14 @@ function [public_vars] = student_workspace(read_only_vars, public_vars)
 
 
 if read_only_vars.counter == 1
-
     public_vars = init_particle_filter(read_only_vars, public_vars);
     public_vars = init_kalman_filter(read_only_vars, public_vars);
     clear functions;
-    
-
+  
     public_vars.move_en = 0;
     %% PATH SELECTION:
     public_vars.path_select = 3; % select from 1-3 
 
-  
     %% PATHS: 
     % -- Path 1: Straight line ------------------------------------------
     %    A horizontal traverse across the arena at constant height y = 3.
@@ -67,8 +64,12 @@ public_vars.estimated_pose = estimate_pose(public_vars);
 %% PURE PURSUIT OR HOT PURSUIT?
 public_vars = plan_motion(read_only_vars, public_vars);
 
-
 plot_enable = 0;    % set to 1 to see histogram plots alongside the arena
 public_vars.uncertainties = calc_unc(read_only_vars, plot_enable);
+
+test_measurement = compute_lidar_measurement(read_only_vars.map,read_only_vars.mocap_pose, ...
+                                             read_only_vars.lidar_config);
+disp(test_measurement)
+disp(read_only_vars.lidar_distances);
 
 end
