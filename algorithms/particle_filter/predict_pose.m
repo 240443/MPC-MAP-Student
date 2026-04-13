@@ -12,12 +12,12 @@ d  = read_only_vars.agent_drive.interwheel_dist;
 dt = read_only_vars.sampling_period;
 
 v = (v_R + v_L) / 2;
-omega = (v_R - v_L) / d; %check kinematics
+omega = (v_L - v_R) / d; %check kinematics
 
 % Probabilistic noise dispersion coefs --------
-alpha_v = 0.05;
-alpha_omega = 0.03;
-base_noise = 0.002;
+alpha_v = 0.1;
+alpha_omega = 0.1;
+base_noise = 0.1;
 
 v_noisy = v + randn() * (alpha_v* abs(v) + base_noise);
 omega_noisy = omega + randn() * (alpha_omega * abs(omega) + base_noise);

@@ -1,7 +1,7 @@
 function [weights] = weight_particles(particle_measurements, lidar_distances)
 
     N = size(particle_measurements, 1);
-    sigma = 0.5;          % tune this — sensor noise std dev in meters
+    sigma = 0.1;          % tune this - sensor noise std dev in meters
     weights = zeros(N, 1);
 
     for i = 1:N
