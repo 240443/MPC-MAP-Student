@@ -57,5 +57,6 @@ grid on;
 
 sgtitle('Sensor Noise Characteristics (Normal PDF)');
 unc.move_en = 1;
+unc.gnss_mean = mean(read_only_vars.gnss_history);
 
 end

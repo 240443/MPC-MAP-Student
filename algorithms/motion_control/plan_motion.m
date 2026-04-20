@@ -13,7 +13,7 @@ d       = read_only_vars.agent_drive.interwheel_dist;   % 0.2 m
 max_vel = read_only_vars.agent_drive.max_vel;           % 1.0 m/s
 
 % Retrieve MoCap pose 
-pose = read_only_vars.mocap_pose;   % [x, y, theta] 
+pose = public_vars.estimated_pose;   % [x, y, theta] 
 path = public_vars.path;            % N×2 waypoint matrix
 
 % no pose or no path -> stand still

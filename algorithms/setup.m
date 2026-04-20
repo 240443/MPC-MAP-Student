@@ -1,6 +1,6 @@
 
-start_position = [1.5, 3, 0]; % (x, y, theta)  — facing right (+x direction)
+start_position = [2, 2, pi/2]; % (x, y, theta)  — facing right (+x direction)
 
-map_name = 'maps/week3_map.txt';
+map_name = 'maps/outdoor_1.txt';
 
 

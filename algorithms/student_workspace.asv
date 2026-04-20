@@ -5,16 +5,17 @@ function [public_vars] = student_workspace(read_only_vars, public_vars)
 %    2 = circular arc (upper semicircle)
 %    3 = sine wave
 
-
+plot_enable = 1;
 if read_only_vars.counter == 1
 
     public_vars = init_particle_filter(read_only_vars, public_vars);
-    public_vars = init_kalman_filter(read_only_vars, public_vars);
+        % set to 1 to see histogram plots alongside the arena
     clear functions;
+    
 
     public_vars.move_en = 0;
     %% PATH SELECTION:
-    public_vars.path_select = 1; % select from 1-3 
+    public_vars.path_select = 2; % select from 1-3 
 
   
     %% PATHS: 
@@ -26,13 +27,13 @@ if read_only_vars.counter == 1
     path1 = [x1, y1];
 
     % -- Path 2: Circular arc (upper semicircle) ------------------------
-    %    Centre (7.5, 1.5), radius 4 m.
+    %    Centre (9, 2), radius 7 m.
     %    Parametric sweep t ∈ [π, 0]:  starts at (3.5, 1.5) on the left,
     %    arcs through the apex (7.5, 5.5) and ends at (11.5, 1.5) on the right.
     n = 120;
     t  = linspace(pi, 0, n)';
-    x2 = 7.5 + 4 * cos(t);
-    y2 = 1.5 + 4 * sin(t);
+    x2 = 9 + 7* cos(t);
+    y2 = 2 + 7* sin(t);
     path2 = [x2, y2];
 
     % -- Path 3: Sine wave ----------------------------------------------
@@ -58,22 +59,17 @@ end % counter == 1
 
 addpath algorithms/uncertainties/;
 
-% -----------------------------------------------------------------------
-% Pose estimation (Week 2 pipeline – kept intact, not used by controller)
-% -----------------------------------------------------------------------
+
 public_vars.particles     = update_particle_filter(read_only_vars, public_vars);
 [public_vars.mu, public_vars.sigma] = update_kalman_filter(read_only_vars, public_vars);
 public_vars.estimated_pose = estimate_pose(public_vars);
 
-% -----------------------------------------------------------------------
-% Motion control  (Pure Pursuit using MoCap pose)
-% -----------------------------------------------------------------------
+%% PURE PURSUIT OR HOT PURSUIT?
 public_vars = plan_motion(read_only_vars, public_vars);
-
-% -----------------------------------------------------------------------
-% Uncertainty analysis (Week 1 – kept intact)
-% -----------------------------------------------------------------------
-plot_enable = 0;    % set to 1 to see histogram plots alongside the arena
 public_vars.uncertainties = calc_unc(read_only_vars, plot_enable);
+
+if public_vars.counter == 200
+public_vars = init_kalman_filter(read_only_vars, public_vars);
+end
 
 end
