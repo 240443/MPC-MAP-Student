@@ -26,7 +26,7 @@ g = w2g(read_only_vars.map.goal(1:2));
 
 % --- Task 2: inflate obstacles by 0.25 m clearance -------------------
 clearance_cells = ceil(0.25 / step);
-occ = imdilate(map > 0, strel('disk', clearance_cells));
+occ = inflate_obstacles(map, clearance_cells);
 [nR, nC] = size(occ);
 
 % Clamp to grid bounds
@@ -88,5 +88,26 @@ cur  = g;
 while ~isequal(cur, s)
     cur  = squeeze(parent(cur(1), cur(2), :))';
     path = [g2w(cur(1), cur(2)); path]; %#ok<AGROW>
+end
+end
+
+
+function occ = inflate_obstacles(map, r)
+% Replaces imdilate(map>0, strel('disk',r)) without any toolbox.
+occ = map > 0;
+[rows, cols] = find(occ);
+[nR, nC] = size(occ);
+for k = 1:numel(rows)
+    rr = rows(k); cc = cols(k);
+    for dr = -r:r
+        for dc = -r:r
+            if dr^2 + dc^2 <= r^2
+                nr = rr+dr; nc = cc+dc;
+                if nr>=1 && nr<=nR && nc>=1 && nc<=nC
+                    occ(nr, nc) = true;
+                end
+            end
+        end
+    end
 end
 end
