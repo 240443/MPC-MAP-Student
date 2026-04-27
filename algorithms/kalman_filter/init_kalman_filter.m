@@ -8,6 +8,7 @@ public_vars.kf.Q = public_vars.uncertainties.gnss_cov;  % [2×2] measurement noi
 public_vars.mu = [mean(read_only_vars.gnss_history)'; pi/2];  % [3×1]
 public_vars.sigma = zeros(3);   
 
+fprintf('initiliazed position: ');
 disp(size(public_vars.mu)) % [3×3]
 end
 
