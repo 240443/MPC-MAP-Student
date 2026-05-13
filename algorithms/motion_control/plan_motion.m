@@ -2,7 +2,7 @@ function [public_vars] = plan_motion(read_only_vars, public_vars)
 %%PURE PURSUIT
 
 % Tuning parameters – vary these to observe their effect (see report)
-LOOKAHEAD_DIST = 1.0;   % (m)   look-ahead distance L
+LOOKAHEAD_DIST = 0.5;   % (m)   look-ahead distance L
                                 
 LINEAR_VEL     = 0.55;  % (m/s) constant forward speed
                                                                  

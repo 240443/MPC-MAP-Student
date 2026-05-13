@@ -6,7 +6,7 @@ function [public_vars] = init_particle_filter(read_only_vars, public_vars)
 % across the map limits (works indoor too, just takes longer to collapse).
 % Particles that land inside walls are rejected.
 
-N = 300;
+N = 500;
 
 lim  = read_only_vars.map.limits;                 % [xmin ymin xmax ymax]
 step = read_only_vars.map.discretization_step;

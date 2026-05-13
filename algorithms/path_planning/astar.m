@@ -34,7 +34,7 @@ end
 s = w2g(start_xy);
 g = w2g(read_only_vars.map.goal(1:2));
 
-clearance_cells = ceil(0.25 / step);
+clearance_cells = ceil(0.1 / step);
 occ = inflate_obstacles(map, clearance_cells);
 [nR, nC] = size(occ);
 

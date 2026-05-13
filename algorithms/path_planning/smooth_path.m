@@ -19,7 +19,7 @@ map  = read_only_vars.discrete_map.map;
 step = read_only_vars.map.discretization_step;
 lim  = read_only_vars.map.limits;
 
-clearance_cells = ceil(0.25 / step);
+clearance_cells = ceil(0.2 / step);
 occ  = inflate_obstacles(map, clearance_cells);
 [nR, nC] = size(occ);
 
@@ -27,8 +27,8 @@ p2g = @(p) [round((p(2) - lim(2)) / step) + 1, ...
              round((p(1) - lim(1)) / step) + 1];
 is_free = @(p) cell_free(p2g(p), nR, nC, occ);
 
-alpha = 0.15;
-beta  = 0.35;
+alpha = 0.2;
+beta  = 0.15;
 tol   = 1e-5;
 
 for iter = 1:3000
