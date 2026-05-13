@@ -1,0 +1,18 @@
+function [measurement] = compute_lidar_measurement(map, pose, lidar_config)
+% COMPUTE_LIDAR_MEASUREMENT  Simulated LIDAR scan from a particle's pose.
+%
+% ray_cast expects the full 3-element pose [x, y, theta] and a LOCAL angle
+% (relative to the robot). It handles the global frame conversion internally.
+
+n_rays      = length(lidar_config);
+measurement = zeros(1, n_rays);
+
+for i = 1 : n_rays
+    d = ray_cast(map, pose, lidar_config(i));
+    if isempty(d)
+        measurement(i) = inf;
+    else
+        measurement(i) = min(d);
+    end
+end
+end

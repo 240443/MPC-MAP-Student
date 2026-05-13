@@ -1,43 +1,46 @@
 function [public_vars] = student_workspace(read_only_vars, public_vars)
+% STUDENT_WORKSPACE  Top-level orchestration.
+%
+% Phases:
+%   counter == 1                init PF
+%   counter 2..CALIB            PF update each step (robot stationary,
+%                               particles tighten under LIDAR/GNSS)
+%   counter == CALIB            plan A* path from PF estimate, smooth it
+%   counter > CALIB             PF update + Pure Pursuit using PF estimate
 
-%Path selection is controlled by the PATH_SELECT variable in setup.m:
-%    1 = straight line
-%    2 = circular arc (upper semicircle)
-%    3 = sine wave
 addpath algorithms/uncertainties/;
-plot_enable = 1;
+addpath algorithms/particle_filter/;
+addpath algorithms/kalman_filter/;
+addpath algorithms/path_planning/;
+addpath algorithms/motion_control/;
+
+CALIB_STEPS  = 50;
+plot_enable  = 0;
+
+% --- counter == 1: initialise PF, hold position --------------------------
 if read_only_vars.counter == 1
-
     public_vars = init_particle_filter(read_only_vars, public_vars);
-        % set to 1 to see histogram plots alongside the arena
+    public_vars.motion_vector = [0, 0];
+    public_vars.path          = [];
+    public_vars.estimated_pose = estimate_pose(public_vars);
     clear functions;
-    
-    public_vars.move_en = 0;
+    return;
+end
 
-
-end % counter == 1
-
-
-
-%% PURE PURSUIT OR HOT PURSUIT?
-
+% --- Sensor noise statistics (used by EKF init if it runs) ---------------
 public_vars.uncertainties = calc_unc(read_only_vars, plot_enable);
 
-%% Kalman filter
-if read_only_vars.counter == 200
-public_vars = init_kalman_filter(read_only_vars, public_vars);
-%% PATH SELECTION:
-public_vars.path = plan_path(read_only_vars, public_vars);
-end
-
-if read_only_vars.counter > 200
-[public_vars.mu, public_vars.sigma] = update_kalman_filter(read_only_vars, public_vars);
-public_vars = plan_motion(read_only_vars, public_vars);
+% --- PF update every step ------------------------------------------------
+public_vars.particles      = update_particle_filter(read_only_vars, public_vars);
 public_vars.estimated_pose = estimate_pose(public_vars);
+
+% --- End of calibration: plan the path -----------------------------------
+if read_only_vars.counter == CALIB_STEPS
+    public_vars.path = plan_path(read_only_vars, public_vars);
 end
 
-% public_vars.particles     = update_particle_filter(read_only_vars, public_vars);
-
-
-
+% --- After calibration: drive --------------------------------------------
+if read_only_vars.counter > CALIB_STEPS
+    public_vars = plan_motion(read_only_vars, public_vars);
+end
 end
